@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:latest
+    container_name: spring_batch_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: spring_batch_mysql
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 1234
+    ports:
+      - "3306:3306"
