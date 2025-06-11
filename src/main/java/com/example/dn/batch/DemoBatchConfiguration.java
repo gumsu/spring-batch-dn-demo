@@ -9,6 +9,7 @@ import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
 import org.springframework.batch.core.repository.JobRepository;
@@ -18,10 +19,12 @@ import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
 @Slf4j
@@ -52,22 +55,49 @@ public class DemoBatchConfiguration {
     public Job importJob() throws Exception {
         return new JobBuilder("importJob", jobRepository)
             .incrementer(new RunIdIncrementer()) /* 반복 테스트를 위해 */
-            .start(importStep())
+            .start(masterStep())
             .build();
     }
 
     @Bean
-    public Step importStep() throws Exception {
-        return new StepBuilder("importStep", jobRepository)
+    public Step masterStep() throws Exception {
+        return new StepBuilder("masterStep", jobRepository)
+            .partitioner(slaveStep().getName(), new CsvRangePartitioner(1000, 100))
+            .step(slaveStep())
+            .gridSize(10)
+            .taskExecutor(new SimpleAsyncTaskExecutor())
+            .build();
+    }
+
+    @Bean
+    public Step slaveStep() throws Exception {
+        return new StepBuilder("slaveStep", jobRepository)
             .<Restaurant, Restaurant>chunk(CHUNK_SIZE, platformTransactionManager)
-            .reader(reader())
+            .reader(reader(0, 0))
             .writer(writer(sqlSessionTemplate(sqlSessionFactory(dataSource))))
             .build();
     }
 
     @Bean
-    public FlatFileItemReader<Restaurant> reader() {
-        FlatFileItemReader<Restaurant> reader = new FlatFileItemReader<>();
+    @StepScope
+    public FlatFileItemReader<Restaurant> reader(
+                @Value("#{stepExecutionContext['startLine']}") int startLine,
+                @Value("#{stepExecutionContext['endLine']}") int endLine) {
+        FlatFileItemReader<Restaurant> reader = new FlatFileItemReader<>() {
+          private int currentLine = 0;
+
+          @Override
+          public Restaurant read() throws Exception {
+              Restaurant item;
+              do {
+                  item = super.read();
+                  currentLine ++;
+              } while (item != null && (currentLine < startLine || currentLine > endLine));
+
+            return (currentLine > endLine) ? null : item;
+          }
+        };
+
         reader.setResource(new ClassPathResource("sample.csv"));
         reader.setLinesToSkip(1);
         reader.setEncoding("UTF-8");
@@ -76,7 +106,7 @@ public class DemoBatchConfiguration {
         DefaultLineMapper<Restaurant> defaultLineMapper = new DefaultLineMapper<>();
 
         /* delimitedLineTokenizer : txt 파일에서 구분자 지정하고 구분한 데이터 setNames를 통해 각 이름 설정 */
-        DelimitedLineTokenizer delimitedLineTokenizer = new customDelimitedLineTokenizer();
+        DelimitedLineTokenizer delimitedLineTokenizer = new CustomDelimitedLineTokenizer();
         delimitedLineTokenizer.setDelimiter(",");
 
         delimitedLineTokenizer.setNames(
@@ -110,7 +140,7 @@ public class DemoBatchConfiguration {
         };
     }
 
-    static class customDelimitedLineTokenizer extends DelimitedLineTokenizer {
+    static class CustomDelimitedLineTokenizer extends DelimitedLineTokenizer {
 
         private static final char DEFAULT_QUOTE_CHARACTER = '"';
 
