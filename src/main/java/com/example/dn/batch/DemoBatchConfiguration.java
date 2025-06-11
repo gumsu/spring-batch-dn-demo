@@ -39,12 +39,12 @@ public class DemoBatchConfiguration {
     private static final int CHUNK_SIZE = 100;
 
     @Bean
-    public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
-        return new SqlSessionTemplate(sqlSessionFactory);
+    public SqlSessionTemplate sqlSessionTemplate() throws Exception {
+        return new SqlSessionTemplate(sqlSessionFactory());
     }
 
     @Bean
-    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
+    public SqlSessionFactory sqlSessionFactory() throws Exception {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
         factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/*.xml"));
@@ -74,7 +74,7 @@ public class DemoBatchConfiguration {
         return new StepBuilder("slaveStep", jobRepository)
             .<Restaurant, Restaurant>chunk(CHUNK_SIZE, platformTransactionManager)
             .reader(reader(0, 0))
-            .writer(writer(sqlSessionTemplate(sqlSessionFactory(dataSource))))
+            .writer(writer())
             .build();
     }
 
@@ -132,10 +132,11 @@ public class DemoBatchConfiguration {
     }
 
     @Bean
-    public ItemWriter<Restaurant> writer(SqlSessionTemplate sqlSessionTemplate) {
+    public ItemWriter<Restaurant> writer() throws Exception {
+        SqlSessionTemplate template = sqlSessionTemplate();
         return items -> {
             for (Restaurant item : items) {
-                sqlSessionTemplate.insert("insertRestaurant", item);
+                template.insert("insertRestaurant", item);
             }
         };
     }
