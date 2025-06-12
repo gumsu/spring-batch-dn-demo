@@ -1,11 +1,9 @@
 package com.example.dn.batch;
 
 import com.example.dn.Restaurant;
-import javax.sql.DataSource;
+import java.sql.SQLException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -66,6 +64,9 @@ public class DemoBatchConfiguration {
             .reader(reader(0, 0))
             .writer(writer())
             .listener(batchExecutionLoggerListener)
+            .faultTolerant()
+            .retryLimit(3)
+            .retry(SQLException.class)
             .build();
     }
 
