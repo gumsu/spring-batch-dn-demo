@@ -1,4 +1,4 @@
-package com.example.dn.batch;
+package com.example.dn.batch.config;
 
 import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;

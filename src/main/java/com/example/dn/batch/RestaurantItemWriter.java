@@ -1,6 +1,6 @@
 package com.example.dn.batch;
 
-import com.example.dn.Restaurant;
+import com.example.dn.batch.domain.Restaurant;
 import lombok.RequiredArgsConstructor;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.batch.item.ItemWriter;

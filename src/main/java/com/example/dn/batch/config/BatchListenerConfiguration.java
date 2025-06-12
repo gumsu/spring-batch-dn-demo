@@ -1,5 +1,7 @@
-package com.example.dn.batch;
+package com.example.dn.batch.config;
 
+import com.example.dn.batch.listener.BatchExecutionLogMapper;
+import com.example.dn.batch.listener.BatchExecutionLoggerListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

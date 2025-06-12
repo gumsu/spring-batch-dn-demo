@@ -1,4 +1,4 @@
-package com.example.dn;
+package com.example.dn.batch.domain;
 
 import lombok.Data;
 

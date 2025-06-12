@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.dn.RestaurantMapper">
+<mapper namespace="com.example.dn.batch.domain.RestaurantMapper">
 
-  <insert id="insertRestaurant" parameterType="com.example.dn.Restaurant">
+  <insert id="insertRestaurant" parameterType="com.example.dn.batch.domain.Restaurant">
     INSERT INTO restaurant (
       sequence,
       open_service_name,

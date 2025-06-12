@@ -1,6 +1,6 @@
 package com.example.dn.batch;
 
-import com.example.dn.Restaurant;
+import com.example.dn.batch.domain.Restaurant;
 import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;

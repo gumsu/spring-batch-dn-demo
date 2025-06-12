@@ -1,4 +1,4 @@
-package com.example.dn.batch;
+package com.example.dn.batch.listener;
 
 import org.apache.ibatis.annotations.Mapper;
 

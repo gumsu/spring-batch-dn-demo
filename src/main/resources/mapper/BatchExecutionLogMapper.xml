@@ -2,16 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.example.dn.batch.BatchExecutionLogMapper">
+<mapper namespace="com.example.dn.batch.listener.BatchExecutionLogMapper">
 
-    <insert id="insertJobLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+    <insert id="insertJobLog" parameterType="com.example.dn.batch.listener.BatchExecutionLog">
         INSERT INTO batch_execution_log
         (job_name, job_execution_id, status, start_time, exit_code, exit_message)
         VALUES
         (#{jobName}, #{jobExecutionId}, #{status}, #{startTime}, #{exitCode}, #{exitMessage})
     </insert>
 
-    <insert id="insertStepLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+    <insert id="insertStepLog" parameterType="com.example.dn.batch.listener.BatchExecutionLog">
         INSERT INTO batch_execution_log
         (job_name, job_execution_id, step_name, status, start_time,
          read_count, write_count, commit_count, rollback_count)
@@ -20,7 +20,7 @@
          #{readCount}, #{writeCount}, #{commitCount}, #{rollbackCount})
     </insert>
 
-    <update id="updateJobLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+    <update id="updateJobLog" parameterType="com.example.dn.batch.listener.BatchExecutionLog">
         UPDATE batch_execution_log
         SET status = #{status},
             end_time = #{endTime},
@@ -31,7 +31,7 @@
         AND step_name IS NULL
     </update>
 
-    <update id="updateStepLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+    <update id="updateStepLog" parameterType="com.example.dn.batch.listener.BatchExecutionLog">
         UPDATE batch_execution_log
         SET status = #{status},
             end_time = #{endTime},
