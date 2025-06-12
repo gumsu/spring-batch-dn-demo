@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.dn.batch.BatchExecutionLogMapper">
+
+    <insert id="insertJobLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+        INSERT INTO batch_execution_log
+        (job_name, job_execution_id, status, start_time, exit_code, exit_message)
+        VALUES
+        (#{jobName}, #{jobExecutionId}, #{status}, #{startTime}, #{exitCode}, #{exitMessage})
+    </insert>
+
+    <insert id="insertStepLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+        INSERT INTO batch_execution_log
+        (job_name, job_execution_id, step_name, status, start_time,
+         read_count, write_count, commit_count, rollback_count)
+        VALUES
+        (#{jobName}, #{jobExecutionId}, #{stepName}, #{status}, #{startTime},
+         #{readCount}, #{writeCount}, #{commitCount}, #{rollbackCount})
+    </insert>
+
+    <update id="updateJobLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+        UPDATE batch_execution_log
+        SET status = #{status},
+            end_time = #{endTime},
+            exit_code = #{exitCode},
+            exit_message = #{exitMessage},
+            error_message = #{errorMessage}
+        WHERE job_execution_id = #{jobExecutionId}
+        AND step_name IS NULL
+    </update>
+
+    <update id="updateStepLog" parameterType="com.example.dn.batch.BatchExecutionLog">
+        UPDATE batch_execution_log
+        SET status = #{status},
+            end_time = #{endTime},
+            exit_code = #{exitCode},
+            exit_message = #{exitMessage},
+            read_count = #{readCount},
+            write_count = #{writeCount},
+            commit_count = #{commitCount},
+            rollback_count = #{rollbackCount},
+            error_message = #{errorMessage}
+        WHERE job_execution_id = #{jobExecutionId}
+        AND step_name = #{stepName}
+    </update>
+
+</mapper>

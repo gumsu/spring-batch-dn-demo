@@ -1,10 +1,8 @@
 package com.example.dn;
 
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.stereotype.Repository;
 
-@Repository
 @Mapper
-public interface RestaurantRepository {
+public interface RestaurantMapper {
     void insertRestaurant(Restaurant restaurant);
 }

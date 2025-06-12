@@ -22,8 +22,8 @@ import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -32,30 +32,19 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 public class DemoBatchConfiguration {
 
+    private final SqlSessionTemplate sqlSessionTemplate;
     private final JobRepository jobRepository;
     private final PlatformTransactionManager platformTransactionManager;
-    private final DataSource dataSource;
+    private final @Lazy BatchExecutionLoggerListener batchExecutionLoggerListener;
 
     private static final int CHUNK_SIZE = 100;
-
-    @Bean
-    public SqlSessionTemplate sqlSessionTemplate() throws Exception {
-        return new SqlSessionTemplate(sqlSessionFactory());
-    }
-
-    @Bean
-    public SqlSessionFactory sqlSessionFactory() throws Exception {
-        SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
-        factoryBean.setDataSource(dataSource);
-        factoryBean.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:mapper/*.xml"));
-        return factoryBean.getObject();
-    }
 
     @Bean
     public Job importJob() throws Exception {
         return new JobBuilder("importJob", jobRepository)
             .incrementer(new RunIdIncrementer()) /* 반복 테스트를 위해 */
             .start(masterStep())
+            .listener(batchExecutionLoggerListener)
             .build();
     }
 
@@ -66,6 +55,7 @@ public class DemoBatchConfiguration {
             .step(slaveStep())
             .gridSize(10)
             .taskExecutor(new SimpleAsyncTaskExecutor())
+            .listener(batchExecutionLoggerListener)
             .build();
     }
 
@@ -75,6 +65,7 @@ public class DemoBatchConfiguration {
             .<Restaurant, Restaurant>chunk(CHUNK_SIZE, platformTransactionManager)
             .reader(reader(0, 0))
             .writer(writer())
+            .listener(batchExecutionLoggerListener)
             .build();
     }
 
@@ -133,7 +124,7 @@ public class DemoBatchConfiguration {
 
     @Bean
     public ItemWriter<Restaurant> writer() throws Exception {
-        SqlSessionTemplate template = sqlSessionTemplate();
+        SqlSessionTemplate template = sqlSessionTemplate;
         return items -> {
             for (Restaurant item : items) {
                 template.insert("insertRestaurant", item);
