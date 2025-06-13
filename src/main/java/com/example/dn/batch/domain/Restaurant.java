@@ -5,7 +5,8 @@ import lombok.Data;
 @Data
 public class Restaurant {
 
-    private String sequence;
+    private String baseDt;
+    private Long sequence;
     private String openServiceName;
     private String openServiceId;
     private String municipalityCode;
@@ -52,6 +53,4 @@ public class Restaurant {
     private String traditionalBusinessDesignationNumber;
     private String mainDishOfTraditionalBusiness;
     private String homepage;
-
-
 }

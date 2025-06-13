@@ -62,7 +62,7 @@ public class DemoBatchConfiguration {
     public Step slaveStep() throws Exception {
         return new StepBuilder("slaveStep", jobRepository)
             .<Restaurant, Restaurant>chunk(CHUNK_SIZE, platformTransactionManager)
-            .reader(reader(0, 0))
+            .reader(reader(null,0, 0))
             .writer(restaurantItemWriter.writer())
             .listener(batchExecutionLoggerListener)
             .faultTolerant()
@@ -74,6 +74,7 @@ public class DemoBatchConfiguration {
     @Bean
     @StepScope
     public FlatFileItemReader<Restaurant> reader(
+        @Value("#{jobParameters['baseDt']}") String baseDt,
         @Value("#{stepExecutionContext['startLine']}") int startLine,
         @Value("#{stepExecutionContext['endLine']}") int endLine) {
         FlatFileItemReader<Restaurant> reader = new FlatFileItemReader<>() {
@@ -81,13 +82,25 @@ public class DemoBatchConfiguration {
 
             @Override
             public Restaurant read() throws Exception {
-                Restaurant item;
-                do {
-                    item = super.read();
-                    currentLine ++;
-                } while (item != null && (currentLine < startLine || currentLine > endLine));
+                while (true) {
+                    Restaurant item = super.read();
+                    currentLine++;
 
-                return (currentLine > endLine) ? null : item;
+                    if (item == null) {
+                        return null; // 더 이상 읽을 것이 없음
+                    }
+
+                    if (currentLine < startLine) {
+                        continue; // 아직 시작 라인 도달 전
+                    }
+
+                    if (currentLine > endLine) {
+                        return null; // 읽어야 할 범위 초과
+                    }
+
+                    item.setBaseDt(baseDt);
+                    return item;
+                }
             }
         };
 
@@ -124,6 +137,7 @@ public class DemoBatchConfiguration {
         return reader;
     }
 
+    // 따옴표 안에 콤마는 무시
     static class CustomDelimitedLineTokenizer extends DelimitedLineTokenizer {
 
         private static final char DEFAULT_QUOTE_CHARACTER = '"';

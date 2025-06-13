@@ -5,6 +5,7 @@
 
   <insert id="insertRestaurant" parameterType="com.example.dn.batch.domain.Restaurant">
     INSERT INTO restaurant (
+      base_dt,
       sequence,
       open_service_name,
       open_service_id,
@@ -53,6 +54,7 @@
       main_dish_of_traditional_business,
       homepage
     ) VALUES (
+               #{baseDt},
                #{sequence},
                #{openServiceName},
                #{openServiceId},
