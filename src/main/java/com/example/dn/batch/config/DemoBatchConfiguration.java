@@ -1,5 +1,6 @@
 package com.example.dn.batch.config;
 
+import com.example.dn.batch.DeleteTasklet;
 import com.example.dn.batch.domain.Restaurant;
 import com.example.dn.batch.listener.BatchExecutionLoggerListener;
 import com.example.dn.batch.CsvRangePartitioner;
@@ -34,6 +35,7 @@ public class DemoBatchConfiguration {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager platformTransactionManager;
     private final @Lazy BatchExecutionLoggerListener batchExecutionLoggerListener;
+    private final DeleteTasklet deleteTasklet;
     private final RestaurantItemWriter restaurantItemWriter;
 
     private static final int CHUNK_SIZE = 100;
@@ -42,8 +44,16 @@ public class DemoBatchConfiguration {
     public Job importJob() throws Exception {
         return new JobBuilder("importJob", jobRepository)
             .incrementer(new RunIdIncrementer()) /* 반복 테스트를 위해 */
-            .start(masterStep())
+            .start(deleteStep())
+            .next(masterStep())
             .listener(batchExecutionLoggerListener)
+            .build();
+    }
+
+    @Bean
+    public Step deleteStep() {
+        return new StepBuilder("deleteStep", jobRepository)
+            .tasklet(deleteTasklet, platformTransactionManager)
             .build();
     }
 
@@ -104,7 +114,7 @@ public class DemoBatchConfiguration {
             }
         };
 
-        reader.setResource(new ClassPathResource("sample.csv"));
+        reader.setResource(new ClassPathResource("sample2.csv"));
         reader.setLinesToSkip(1);
         reader.setEncoding("UTF-8");
 

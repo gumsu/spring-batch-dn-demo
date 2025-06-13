@@ -104,4 +104,9 @@
                #{homepage}
              )
   </insert>
+
+  <delete id="deleteByBaseDt" parameterType="String">
+    DELETE FROM restaurant WHERE base_dt = #{baseDt}
+  </delete>
+
 </mapper>
