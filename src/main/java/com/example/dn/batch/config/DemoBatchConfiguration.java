@@ -72,7 +72,7 @@ public class DemoBatchConfiguration {
     public Step slaveStep() throws Exception {
         return new StepBuilder("slaveStep", jobRepository)
             .<Restaurant, Restaurant>chunk(CHUNK_SIZE, platformTransactionManager)
-            .reader(reader(null,0, 0))
+            .reader(reader(null, 0, 0))
             .writer(restaurantItemWriter.writer())
             .listener(batchExecutionLoggerListener)
             .faultTolerant()
@@ -97,15 +97,15 @@ public class DemoBatchConfiguration {
                     currentLine++;
 
                     if (item == null) {
-                        return null; // 더 이상 읽을 것이 없음
+                        return null;
                     }
 
                     if (currentLine < startLine) {
-                        continue; // 아직 시작 라인 도달 전
+                        continue;
                     }
 
                     if (currentLine > endLine) {
-                        return null; // 읽어야 할 범위 초과
+                        return null;
                     }
 
                     item.setBaseDt(baseDt);
@@ -118,32 +118,36 @@ public class DemoBatchConfiguration {
         reader.setLinesToSkip(1);
         reader.setEncoding("UTF-8");
 
-        /* defaultLineMapper: 읽으려는 데이터 LineMapper을 통해 Dto로 매핑 */
         DefaultLineMapper<Restaurant> defaultLineMapper = new DefaultLineMapper<>();
 
-        /* delimitedLineTokenizer : txt 파일에서 구분자 지정하고 구분한 데이터 setNames를 통해 각 이름 설정 */
         DelimitedLineTokenizer delimitedLineTokenizer = new CustomDelimitedLineTokenizer();
         delimitedLineTokenizer.setDelimiter(",");
 
         delimitedLineTokenizer.setNames(
-            "sequence", "openServiceName",	"openServiceId", "municipalityCode", "managementNumber", "permissionDate",
-            "cancellationDate",	"businessStatusCode", "businessStatusName",	"detailedBusinessStatusCode", "detailedBusinessStatusName",
-            "closureDate", "suspensionStartDate",	"suspensionEndDate", "reopenDate", "contactNumber", "siteArea", "postalCode",
-            "fullAddress", "roadNameAddress", "roadNamePostalCode", "businessName", "lastModifiedDate", "dataUpdateType", "dataUpdateDate",
-            "businessCategory", "coordinateX", "coordinateY", "sanitationType", "numberOfMaleEmployees", "numberOfFemaleEmployees",
-            "businessAreaType", "grade", "waterSupplyType", "totalEmployees", "headOfficeEmployees"	, "factoryOfficeEmployees", "factorySalesEmployees",
-            "factoryProductionEmployees", "buildingOwnershipType",	"securityDeposit", "monthlyRent", "isMultiUseFacility",	"totalFacilitySize",
-            "traditionalBusinessDesignationNumber", "mainDishOfTraditionalBusiness", "homepage" );//행으로 읽은 데이터 매칭할 데이터 각 이름
-        defaultLineMapper.setLineTokenizer(delimitedLineTokenizer); //lineTokenizer 설정
+            "sequence", "openServiceName", "openServiceId", "municipalityCode", "managementNumber",
+            "permissionDate",
+            "cancellationDate", "businessStatusCode", "businessStatusName",
+            "detailedBusinessStatusCode", "detailedBusinessStatusName",
+            "closureDate", "suspensionStartDate", "suspensionEndDate", "reopenDate",
+            "contactNumber", "siteArea", "postalCode",
+            "fullAddress", "roadNameAddress", "roadNamePostalCode", "businessName",
+            "lastModifiedDate", "dataUpdateType", "dataUpdateDate",
+            "businessCategory", "coordinateX", "coordinateY", "sanitationType",
+            "numberOfMaleEmployees", "numberOfFemaleEmployees",
+            "businessAreaType", "grade", "waterSupplyType", "totalEmployees", "headOfficeEmployees",
+            "factoryOfficeEmployees", "factorySalesEmployees",
+            "factoryProductionEmployees", "buildingOwnershipType", "securityDeposit", "monthlyRent",
+            "isMultiUseFacility", "totalFacilitySize",
+            "traditionalBusinessDesignationNumber", "mainDishOfTraditionalBusiness", "homepage");
+        defaultLineMapper.setLineTokenizer(delimitedLineTokenizer);
 
-        /* beanWrapperFieldSetMapper: 매칭할 class 타입 지정 */
         BeanWrapperFieldSetMapper<Restaurant> beanWrapperFieldSetMapper = new BeanWrapperFieldSetMapper<>();
         beanWrapperFieldSetMapper.setTargetType(Restaurant.class);
         beanWrapperFieldSetMapper.setStrict(false);
 
-        defaultLineMapper.setFieldSetMapper(beanWrapperFieldSetMapper); //fieldSetMapper 지정
+        defaultLineMapper.setFieldSetMapper(beanWrapperFieldSetMapper);
 
-        reader.setLineMapper(defaultLineMapper); //lineMapper 지정
+        reader.setLineMapper(defaultLineMapper);
         return reader;
     }
 
